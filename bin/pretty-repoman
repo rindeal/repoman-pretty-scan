@@ -1,0 +1,109 @@
+#!/usr/bin/env python3.6
+##
+# Copyright (C) 2018  Jan Chren (rindeal)
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+##
+
+# -----------------------------------------------------------------------------
+import argparse
+import textwrap
+import subprocess
+import sys
+
+from rindeal.travis_ci import Fold
+
+sys.path.insert(0, ".")
+from rindeal.portage.pretty_repoman import Parser, Printer
+from rindeal.portage.pretty_repoman._pkg_metadata import metadata
+
+
+def main():
+	argparser = argparse.ArgumentParser(
+		description="Pretty Repoman",
+		formatter_class=argparse.RawDescriptionHelpFormatter,
+	)
+	argparser.add_argument(
+		'-v', '--version',
+		action='version',
+		version=textwrap.dedent(
+			f"""
+			%(prog)s {metadata.version}
+
+			Copyright 2018 {metadata.author}
+			License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
+			This is free software: you are free to change and redistribute it.
+			There is NO WARRANTY, to the extent permitted by law.
+			"""
+		)
+	)
+	argparser.add_argument('--travis-ci', action='store_true')
+	argparser.add_argument('-f', '--parse-file', nargs=1, metavar='FILE')
+	argparser.add_argument('-c', '--parse-stdin', action='store_true')
+	argparser.add_argument('--truncate', choices={'y', 'n'}, default='y')
+	argparser.add_argument('--max-width', type=int, default=Printer.TRAVIS_CI_MAX_LINE_WIDTH)
+	argparser.add_argument('--placeholder', default="...")
+	argparser.add_argument('REPOMAN_ARGS', nargs=argparse.REMAINDER)
+	args = argparser.parse_args()
+
+	proc = None
+	input_stream = None
+	printer_kwargs = {}
+
+	def check_input_stream():
+		if input_stream is not None:
+			raise ValueError("input stream is already defined")
+
+	if args.parse_stdin:
+		check_input_stream()
+		input_stream = sys.stdin
+	if args.parse_file:
+		check_input_stream()
+		input_stream = open(args.parse_file[0], encoding="utf-8")
+	if input_stream is None:
+		repoman_args = [a for a in args.REPOMAN_ARGS if a != "--"]
+		proc = subprocess.Popen(
+			["repoman", "full", "--verbose", "--output-style", "column"] + repoman_args,
+			stdout=subprocess.PIPE,
+			encoding="utf-8"
+		)
+		input_stream = proc.stdout
+
+	parser = Parser(input_stream)
+	parser.parse()
+
+	bool_arg_val_binding = {'y': True, 'n': False}
+
+	printer_kwargs['truncate'] = bool_arg_val_binding[args.truncate]
+	printer_kwargs['max_width'] = args.max_width
+	printer_kwargs['placeholder'] = args.placeholder
+
+	printer = Printer(parser.pkgs, parser.other_msgcodes, parser.invalid_lines)
+	printer.print()
+
+	if args.travis_ci:
+		with Fold("repoman.results.raw"):
+			for line in parser.raw_input:
+				print(line, end='')
+
+	if proc:
+		proc.kill()
+		proc.wait()
+		exit(proc.returncode)
+
+
+if __name__ == '__main__':
+	main()
+else:
+	raise ImportError("This script is not importable")
