@@ -19,23 +19,28 @@
 from distutils.core import setup
 import sys
 
+
 # make sure local modules are imported
 sys.path.insert(0, ".")
-from rindeal.portage.pretty_repoman._pkg_metadata import metadata
+from rindeal.portage.pretty_repoman_scan._pkg_metadata import metadata
+
 
 setup(
-	# ## required fields
+	# >> required fields
 	name=metadata.name,
 	version=metadata.version,
-	description=metadata.short_description,
 	url=metadata.url,
 
-	# ## creator section
+	# >> creator section
 	author=metadata.author,
 	author_email=metadata.author_email,
 	license=metadata.licence_name,
 
-	# ## stuff to actually do
-	packages=("rindeal.portage.pretty_repoman",),
-	scripts=("bin/pretty-repoman",),
+	# >> dependencies
+	# https://docs.python.org/3/distutils/setupscript.html#relationships-between-distributions-and-packages
+	requires=("travis-ci-utils",),
+
+	# >> stuff to actually do
+	packages=("rindeal.portage.pretty_repoman_scan",),
+	scripts=(f"bin/{metadata.name}",),
 )
