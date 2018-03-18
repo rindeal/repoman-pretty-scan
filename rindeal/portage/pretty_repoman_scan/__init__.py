@@ -21,7 +21,7 @@ import re
 import sys
 import typing
 
-from rindeal.travis_ci import colour
+from rindeal.travis_ci.utils import colour
 
 
 class _MyDict(collections.OrderedDict):
