@@ -41,6 +41,6 @@ setup(
 	requires=("rindeal.travis_ci.utils",),
 
 	# >> stuff to actually do
-	packages=("rindeal.portage.pretty_repoman_scan",),
+	packages=("rindeal.portage.repoman.pretty_scan",),
 	scripts=(f"bin/{metadata.name}",),
 )
