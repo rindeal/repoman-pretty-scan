@@ -22,7 +22,7 @@ import sys
 
 # make sure local modules are imported
 sys.path.insert(0, ".")
-from rindeal.portage.pretty_repoman_scan._pkg_metadata import metadata
+from rindeal.portage.repoman.pretty_scan._pkg_metadata import metadata
 
 
 setup(

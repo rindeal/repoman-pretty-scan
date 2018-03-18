@@ -25,10 +25,10 @@ import os
 
 from rindeal.travis_ci.utils import Fold
 
-if os.path.exists("rindeal/portage/pretty_repoman_scan"):
+if os.path.exists("rindeal/portage/repoman/pretty_scan"):
 	sys.path.insert(0, ".")
-from rindeal.portage.pretty_repoman_scan import Parser, Printer
-from rindeal.portage.pretty_repoman_scan._pkg_metadata import metadata
+from rindeal.portage.repoman.pretty_scan import Parser, Printer
+from rindeal.portage.repoman.pretty_scan._pkg_metadata import metadata
 
 
 def main():
