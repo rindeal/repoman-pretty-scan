@@ -23,7 +23,7 @@ import subprocess
 import sys
 import os
 
-from rindeal.travis_ci import Fold
+from rindeal.travis_ci.utils import Fold
 
 if os.path.exists("rindeal/portage/pretty_repoman_scan"):
 	sys.path.insert(0, ".")
