@@ -38,7 +38,7 @@ setup(
 
 	# >> dependencies
 	# https://docs.python.org/3/distutils/setupscript.html#relationships-between-distributions-and-packages
-	requires=("travis-ci-utils",),
+	requires=("rindeal.travis_ci.utils",),
 
 	# >> stuff to actually do
 	packages=("rindeal.portage.pretty_repoman_scan",),
