@@ -65,7 +65,7 @@ def main():
 	proc = None
 	input_stream = None
 	printer_kwargs = {}
-	verbose_fold = TimedFold("repoman.verbose", stream=sys.stderr)
+	verbose_fold = TimedFold("repoman.verbose", desc="Repoman verbose log", stream=sys.stderr)
 
 	def check_input_stream():
 		if input_stream is not None:
@@ -85,7 +85,6 @@ def main():
 		proc = subprocess.Popen(
 			["repoman", "full", "--verbose", "--output-style", "column"] + repoman_args,
 			stdout=subprocess.PIPE,
-			stderr=sys.stderr,
 			encoding="utf-8"
 		)
 		input_stream = proc.stdout
