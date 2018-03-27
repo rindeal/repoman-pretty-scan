@@ -25,8 +25,11 @@ import os
 
 from rindeal.travis_ci.utils import Fold, TimedFold
 
-if os.path.exists("rindeal/portage/repoman/pretty_scan"):
-	sys.path.insert(0, ".")
+_SCRIPT_DIR_ = os.path.dirname(os.path.realpath(__file__))
+_DEV_TEST_DIR_ = os.path.realpath(os.path.join(_SCRIPT_DIR_, "rindeal/portage/repoman/pretty_scan"))
+
+if os.path.exists(_DEV_TEST_DIR_):
+	sys.path.insert(0, os.path.realpath(os.path.join(_SCRIPT_DIR_, "..")))
 from rindeal.portage.repoman.pretty_scan import Parser, Printer
 from rindeal.portage.repoman.pretty_scan._pkg_metadata import metadata
 
@@ -82,6 +85,7 @@ def main():
 		proc = subprocess.Popen(
 			["repoman", "full", "--verbose", "--output-style", "column"] + repoman_args,
 			stdout=subprocess.PIPE,
+			stderr=sys.stderr,
 			encoding="utf-8"
 		)
 		input_stream = proc.stdout
