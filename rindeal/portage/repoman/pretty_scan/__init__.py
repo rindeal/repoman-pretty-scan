@@ -320,9 +320,11 @@ class Printer:
 				self._print_msgs(pkg.msgs, indent_lvl + 1)
 
 	def print(self):
+		header_width = 100
 		print()
-		print(colour("Repoman results".center(80, ' '), fg='yellow'))
-		print(colour("=" * 80, fg='green'))
+		print(colour("=" * header_width, fg='green'))
+		print(colour("<<< Repoman results >>>".center(header_width, ' '), fg='yellow'))
+		print(colour("=" * header_width, fg='green'))
 		print()
 
 		if self._pkgs:
