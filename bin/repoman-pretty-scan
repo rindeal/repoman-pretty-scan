@@ -101,7 +101,7 @@ def main():
 	printer.print()
 
 	if args.travis_ci:
-		with Fold("repoman.results.raw"):
+		with Fold("repoman.results.raw", desc="Raw repoman output"):
 			for line in parser.raw_input:
 				print(line, end='')
 
