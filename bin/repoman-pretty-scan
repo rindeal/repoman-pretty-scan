@@ -26,7 +26,9 @@ import os
 from rindeal.travis_ci.utils import Fold, TimedFold
 
 _SCRIPT_DIR_ = os.path.dirname(os.path.realpath(__file__))
-_DEV_TEST_DIR_ = os.path.realpath(os.path.join(_SCRIPT_DIR_, "rindeal/portage/repoman/pretty_scan"))
+_DEV_TEST_DIR_ = os.path.realpath(os.path.join(_SCRIPT_DIR_, "..", "rindeal/portage/repoman/pretty_scan"))
+print("_SCRIPT_DIR_", _SCRIPT_DIR_)
+print("_DEV_TEST_DIR_", _DEV_TEST_DIR_)
 
 if os.path.exists(_DEV_TEST_DIR_):
 	sys.path.insert(0, os.path.realpath(os.path.join(_SCRIPT_DIR_, "..")))
