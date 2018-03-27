@@ -23,7 +23,7 @@ import subprocess
 import sys
 import os
 
-from rindeal.travis_ci.utils import Fold
+from rindeal.travis_ci.utils import Fold, TimedFold
 
 if os.path.exists("rindeal/portage/repoman/pretty_scan"):
 	sys.path.insert(0, ".")
@@ -62,7 +62,7 @@ def main():
 	proc = None
 	input_stream = None
 	printer_kwargs = {}
-	verbose_fold = verbose_fold = Fold("repoman.verbose", stream=sys.stderr)
+	verbose_fold = TimedFold("repoman.verbose", stream=sys.stderr)
 
 	def check_input_stream():
 		if input_stream is not None:
@@ -89,14 +89,15 @@ def main():
 	parser = Parser(input_stream)
 	parser.parse()
 
+	if args.travis_ci:
+		verbose_fold.end()
+
 	bool_arg_val_binding = {'y': True, 'n': False}
 
 	printer_kwargs['truncate'] = bool_arg_val_binding[args.truncate]
 	printer_kwargs['max_width'] = args.max_width
 	printer_kwargs['placeholder'] = args.placeholder
 
-	if args.travis_ci:
-		verbose_fold.end()
 	printer = Printer(parser.pkgs, parser.other_msgcodes, parser.invalid_lines)
 	printer.print()
 
