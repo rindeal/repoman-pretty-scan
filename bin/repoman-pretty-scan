@@ -92,7 +92,7 @@ def main():
 	parser = Parser(input_stream)
 	parser.parse()
 
-	if args.travis_ci:
+	if args.travis_ci and verbose_fold.started():
 		verbose_fold.end()
 
 	bool_arg_val_binding = {'y': True, 'n': False}
@@ -101,10 +101,11 @@ def main():
 	printer_kwargs['max_width'] = args.max_width
 	printer_kwargs['placeholder'] = args.placeholder
 
-	printer = Printer(parser.pkgs, parser.other_msgcodes, parser.invalid_lines)
+	printer = Printer(parser.pkgs, parser.other_msgcodes, parser.invalid_lines, **printer_kwargs)
 	printer.print()
 
 	if args.travis_ci:
+		print()
 		with Fold("repoman.results.raw", desc="Raw repoman output"):
 			for line in parser.raw_input:
 				print(line, end='')
