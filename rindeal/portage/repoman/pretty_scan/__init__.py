@@ -1,11 +1,10 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
 ##
 # Copyright (C) 2018  Jan Chren (rindeal)
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# the Free Software Foundation, either version 3 of the License.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -245,7 +244,7 @@ class Parser:
 class Printer:
 	INDENT_PREFIX = "  "
 
-	TRAVIS_CI_MAX_LINE_WIDTH = 130
+	DEFAULT_MAX_LINE_WIDTH = 130
 
 	_pkgs: PkgListType
 	_other_msgcodes: MsgCodeListType
@@ -260,7 +259,7 @@ class Printer:
 			other_msgcodes: MsgCodeListType,
 			invalid_lines: list,
 			truncate: bool = True,
-			max_width: int = TRAVIS_CI_MAX_LINE_WIDTH - 1,
+			max_width: int = DEFAULT_MAX_LINE_WIDTH - 1,
 			placeholder: str = "..."
 	):
 		self._pkgs = pkgs

@@ -54,10 +54,11 @@ def main():
 		)
 	)
 	argparser.add_argument('--travis-ci', action='store_true')
-	argparser.add_argument('-f', '--parse-file', nargs=1, metavar='FILE')
-	argparser.add_argument('-c', '--parse-stdin', action='store_true')
+	mutex_group = argparser.add_mutually_exclusive_group()
+	mutex_group.add_argument('-f', '--parse-file', metavar='FILE')
+	mutex_group.add_argument('-c', '--parse-stdin', action='store_true')
 	argparser.add_argument('--truncate', choices={'y', 'n'}, default='y')
-	argparser.add_argument('--max-width', metavar='WIDTH', type=int, default=Printer.TRAVIS_CI_MAX_LINE_WIDTH)
+	argparser.add_argument('--max-width', metavar='WIDTH', type=int, default=Printer.DEFAULT_MAX_LINE_WIDTH)
 	argparser.add_argument('--placeholder', default="...")
 	argparser.add_argument('REPOMAN_ARGS', nargs=argparse.REMAINDER)
 	args = argparser.parse_args()
@@ -76,7 +77,7 @@ def main():
 		input_stream = sys.stdin
 	if args.parse_file:
 		check_input_stream()
-		input_stream = open(args.parse_file[0], encoding="utf-8")
+		input_stream = open(args.parse_file, encoding="utf-8")
 	if input_stream is None:
 		if args.travis_ci:
 			verbose_fold.start()
