@@ -184,3 +184,5 @@ tags
 
 
 # End of https://www.gitignore.io/api/vim,kate,python,pycharm
+
+!lib/
