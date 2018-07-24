@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/pretty-repoman.iml" filepath="$PROJECT_DIR$/.idea/pretty-repoman.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/repoman-pretty-scan.iml" filepath="$PROJECT_DIR$/.idea/repoman-pretty-scan.iml" />
     </modules>
   </component>
 </project>

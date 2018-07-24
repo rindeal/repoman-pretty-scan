@@ -1,82 +1,86 @@
-#!/usr/bin/env python3.6
+#!/usr/bin/env python3
+# Python-Version-Compatibility: 3.6
 ##
-# Copyright (C) 2018  Jan Chren (rindeal)
+# Copyright (C)  2018 Jan Chren (rindeal)
 #
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
+# This program is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation, version 3 of the License.
 #
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 # GNU General Public License for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# SPDX-License-Identifier: GPL-3.0-only
 ##
 
-# -----------------------------------------------------------------------------
+
 import argparse
-import textwrap
+import os
 import subprocess
 import sys
-import os
 
-from rindeal.travis_ci.utils import Fold, TimedFold
+import rindeal.travis_ci.utils as TravisCI
+
 
 _SCRIPT_DIR_ = os.path.dirname(os.path.realpath(__file__))
-_DEV_TEST_DIR_ = os.path.realpath(os.path.join(_SCRIPT_DIR_, "..", "rindeal/portage/repoman/pretty_scan"))
+_PROJECT_ROOT_DIR_ = os.path.realpath(os.path.join(_SCRIPT_DIR_, ".."))
+_SETUP_PY_PATH_ = os.path.join(_PROJECT_ROOT_DIR_, "setup.py")
+_LIB_DIR_ = os.path.realpath(os.path.join(_PROJECT_ROOT_DIR_, "lib"))
+if os.path.exists(_SETUP_PY_PATH_):
+	sys.path.insert(0, sys.path.insert(0, _LIB_DIR_))
 
-if os.path.exists(_DEV_TEST_DIR_):
-	sys.path.insert(0, os.path.realpath(os.path.join(_SCRIPT_DIR_, "..")))
 from rindeal.portage.repoman.pretty_scan import Parser, Printer
-from rindeal.portage.repoman.pretty_scan._pkg_metadata import metadata
+from rindeal.portage.repoman.pretty_scan._pkg_ import PkgMetadata
 
 
 def main():
 	argparser = argparse.ArgumentParser(
-		description=metadata.short_description,
+		description=PkgMetadata.summary,
 		formatter_class=argparse.RawDescriptionHelpFormatter,
 	)
 	argparser.add_argument(
 		'-v', '--version',
 		action='version',
-		version=textwrap.dedent(
-			f"""
-			%(prog)s {metadata.version}
-
-			Copyright 2018 {metadata.author}
-			License GPLv3: GNU GPL version 3 <http://gnu.org/licenses/gpl.html>
-			This is free software: you are free to change and redistribute it.
-			There is NO WARRANTY, to the extent permitted by law.
-			"""
-		)
-	)
-	argparser.add_argument('--travis-ci', action='store_true')
+		version=f"%(prog)s {PkgMetadata.version}\n\n{PkgMetadata.copyright}")
+	argparser.add_argument(
+		'--travis-ci', action='store_true',
+		help="Use this if you're running on Travis CI to use folding and timing in the output.")
 	mutex_group = argparser.add_mutually_exclusive_group()
-	mutex_group.add_argument('-f', '--parse-file', metavar='FILE')
-	mutex_group.add_argument('-c', '--parse-stdin', action='store_true')
-	argparser.add_argument('--truncate', choices={'y', 'n'}, default='y')
-	argparser.add_argument('--max-width', metavar='WIDTH', type=int, default=Printer.DEFAULT_MAX_LINE_WIDTH)
-	argparser.add_argument('--placeholder', default="...")
-	argparser.add_argument('REPOMAN_ARGS', nargs=argparse.REMAINDER)
+	mutex_group.add_argument(
+		'-f', '--parse-file', metavar='FILE',
+		help="Parse data from FILE instead of running repoman.")
+	mutex_group.add_argument(
+		'-c', '--parse-stdin', action='store_true',
+		help="Parse data from stdin instead of running repoman.")
+	argparser.add_argument(
+		'--truncate', choices={'y', 'n'}, default='y',
+		help="Truncate long lines, width can be customized with --max-width.")
+	argparser.add_argument(
+		'--max-width', metavar='WIDTH', type=int,
+		help="Maximum width of a line before being truncated. Used only if `--truncate=y`.")
+	argparser.add_argument(
+		'--placeholder', default="...",
+		help="Placeholder used at the end of truncated lines. Used only if `--truncate=y`.")
+	argparser.add_argument(
+		'REPOMAN_ARGS', nargs=argparse.REMAINDER,
+		help=(
+			"Arguments passed directly ro repoman. " 
+			"Prepend `--` so that they won't be treated as our args."))
 	args = argparser.parse_args()
 
 	proc = None
 	input_stream = None
 	printer_kwargs = {}
-	verbose_fold = TimedFold("repoman.verbose", desc="Repoman verbose log", stream=sys.stderr)
-
-	def check_input_stream():
-		if input_stream is not None:
-			raise ValueError("input stream is already defined")
+	verbose_fold = TravisCI.TimedFold("repoman.verbose", desc="Repoman verbose log", stream=sys.stderr)
 
 	if args.parse_stdin:
-		check_input_stream()
 		input_stream = sys.stdin
 	if args.parse_file:
-		check_input_stream()
 		input_stream = open(args.parse_file, encoding="utf-8")
 	if input_stream is None:
 		if args.travis_ci:
@@ -91,29 +95,31 @@ def main():
 		input_stream = proc.stdout
 
 	parser = Parser(input_stream)
-	parser.parse()
 
-	if args.travis_ci and verbose_fold.started():
+	results = parser.parse()
+
+	if verbose_fold.started():
 		verbose_fold.end()
 
 	bool_arg_val_binding = {'y': True, 'n': False}
 
 	printer_kwargs['truncate'] = bool_arg_val_binding[args.truncate]
-	printer_kwargs['max_width'] = args.max_width
+	if args.max_width is not None:
+		printer_kwargs['max_width'] = args.max_width
 	printer_kwargs['placeholder'] = args.placeholder
 
-	printer = Printer(parser.pkgs, parser.other_msgcodes, parser.invalid_lines, **printer_kwargs)
+	printer = Printer(results, **printer_kwargs)
 	printer.print()
 
 	if args.travis_ci:
 		print()
-		with Fold("repoman.results.raw", desc="Raw repoman output"):
+		with TravisCI.Fold("repoman.results.raw", desc="Raw repoman output"):
 			for line in parser.raw_input:
 				print(line, end='')
 
 	if proc:
 		proc.wait(timeout=5)
-		exit(proc.returncode)
+		argparser.exit(proc.returncode)
 
 
 if __name__ == '__main__':
